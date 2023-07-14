@@ -51,6 +51,13 @@ namespace movieapp.business.Concrete
 
         public async Task Update(Movie entity)
         {
+            Console.WriteLine(entity.ReleaseDate.ToString());
+            ValidationResult validationResult = movieValidator.Validate(entity);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
             await movieRepository.Update(entity);
         }
     }

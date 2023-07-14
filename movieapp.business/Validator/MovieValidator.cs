@@ -13,7 +13,7 @@ namespace movieapp.business.Validator
         {
             RuleFor(m => m.Title).NotEmpty().WithMessage("Title is required");
             RuleFor(m => m.Description).NotEmpty().WithMessage("Description is required")
-                .MinimumLength(10).WithMessage("Description field cannot be less than 10 characters"); ;
+                .MinimumLength(10).WithMessage("Description field cannot be less than 10 characters"); 
             RuleFor(m => m.ReleaseDate).NotEmpty().WithMessage("Release date is required.");
         }
     }

@@ -12,7 +12,7 @@ namespace movieapp.business.Validator
 {
     public class UserValidator : AbstractValidator<UserRegister>
     {
-         private IUserRepository userRepository;
+         private /*readonly*/ IUserRepository userRepository;
 
         public UserValidator(IUserRepository userRepository)
         {

@@ -93,6 +93,14 @@ namespace MovieApp.WebApi.Controllers
                     {
                         continue;
                     }
+                    if (property.Name == "ReleaseDate")
+                    {
+                        var date = property.GetValue(movie);
+                        if (date.ToString() == "1.01.0001 00:00:00")
+                        {
+                            continue;
+                        }
+                    }
                     var value = property.GetValue(movie);
                     if (value != null)
                     {
