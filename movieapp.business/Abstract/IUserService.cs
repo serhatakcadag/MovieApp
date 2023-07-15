@@ -16,7 +16,7 @@ namespace movieapp.business.Abstract
         Task<bool> Login(User entity);
         Task AddUserWatched(int userId, int movieId);
         Task<List<Movie>> GetWatched(int id);
-        void StoreInCache(Guid token, User user);
+        Task StoreInCache(Guid token, User user);
         User GetFromCache(Guid token);
     }
 }

@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -49,11 +50,10 @@ namespace movieapp.webapi
 
             services.AddScoped<IValidator<Movie>, MovieValidator>();
             services.AddScoped<IValidator<UserRegister>, UserValidator>();
+
+            services.AddTransient<TokenControlMiddleware>();
+            services.AddMemoryCache();
          
-
-           
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,7 +70,18 @@ namespace movieapp.webapi
 
             app.UseAuthorization();
 
+            // app.UseTokenControlMiddleware();
             app.ConfigureExceptionHandler();
+
+            app.UseMiddleware<TokenControlMiddleware>();
+
+
+           /* app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/users"), appBuilder =>
+            {
+                appBuilder.UseMiddleware<TokenControlMiddleware>();
+            });*/
+
+           
 
             app.UseEndpoints(endpoints =>
             {

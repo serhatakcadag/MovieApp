@@ -18,13 +18,13 @@ namespace movieapp.business.Concrete
        
         private IUserRepository userRepository;
         private IValidator<UserRegister> userValidator;
-      //  private IMemoryCache cache;
+        private readonly IMemoryCache cache;
 
-        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator/*, IMemoryCache cache*/)
+        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator, IMemoryCache cache)
         {
             this.userValidator = userValidator;
             this.userRepository = userRepository;
-            //this.cache = cache;
+            this.cache = cache;
         }
 
         public async Task AddUserWatched(int userId, int movieId)
@@ -96,18 +96,17 @@ namespace movieapp.business.Concrete
             await userRepository.Update(entity);
         }
 
-        public void StoreInCache(Guid token, User user)
+        public async Task StoreInCache(Guid token, User user)
         {
-           // cache.Set(token, user);
+              var users = await userRepository.GetAll();
+              var fullUser = users.FirstOrDefault(u => u.Email == user.Email);
+              cache.Set(token, fullUser, TimeSpan.FromMinutes(20));
         }
 
         public User GetFromCache(Guid token)
         {
-            /*if (cache.TryGetValue(token, out User user))
-            {
-                return user;
-            }*/
-            return null;
+            var user = cache.Get<User>(token);
+            return user;
         }
     }
 }

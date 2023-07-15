@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using movieapp.business.Abstract;
 using movieapp.data.Concrete.EFCore;
 using movieapp.entity;
+using MovieApp.Business.Middlewares;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,16 +41,24 @@ namespace userapp.webapi.Controllers
         }
 
         // GET api/<UserController>/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("profile")]
+        public IActionResult Profile()
         {
-            var user = await userService.GetById(id);
-            if (user == null)
+
+            if (HttpContext.Items.TryGetValue("User", out var user))
+            {
+                if (user == null)
+                {
+                    return NotFound(new { message = "There is no such a user like this" });
+                }
+                Console.WriteLine((User)user);
+                return Ok(user);
+            }
+            else
             {
                 return NotFound(new { message = "There is no such a user like this" });
             }
-
-            return Ok(user);
+           
         }
 
         // POST api/<UserController>
@@ -58,7 +68,9 @@ namespace userapp.webapi.Controllers
             try
             {  
                 await userService.Create(u);
-                return Ok(u.User);
+                var guid = Guid.NewGuid();
+                await userService.StoreInCache(guid, u.User);
+                return Ok(new {user = u.User, token = guid });
             }
             catch (ValidationException e)
             {
@@ -135,7 +147,9 @@ namespace userapp.webapi.Controllers
         {
             if (await userService.Login(u))
             {
-                return Ok(new { message = "Logged in."});
+                var guid = Guid.NewGuid();
+                await userService.StoreInCache(guid, u);
+                return Ok(new { message = "Logged in.", token = guid});
             }
             return BadRequest(new { message = "Invalid credentials." });
         }

@@ -2,63 +2,87 @@
 using movieapp.business.Abstract;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MovieApp.Business.Middlewares
 {
     // Middleware
-    public class TokenControlMiddleware
+    public class TokenControlMiddleware : IMiddleware
     {
-        private RequestDelegate _next;
-        private IUserService userService; 
+        private IUserService userService;
 
-        public TokenControlMiddleware (RequestDelegate next, IUserService userService)
+        public TokenControlMiddleware (IUserService userService)
         {
-            _next = next;
             this.userService = userService;
         }
 
-        public async Task Invoke(HttpContext context)
+        private string[] unprotectedGetRoutes = new string[] {"/api/movies"};
+
+        private string[] unprotectedPostRoutes = new string[] { "/api/users", "/api/users/login" };
+
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            // İşlem yapılacak controller ve metot adı
-            /*  var controllerName = "users";
-              var methodName = "SpecificMethod";
-
-             
-              if (context.Request.Path.StartsWithSegments($"/api/{controllerName}/{methodName}"))
-              {
-                 
-
-                  await _next(context);
-              }
-              else
-              {
-             
-                  await _next(context);
-              } */
-
-            if (context.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            if (context.Request.Method == "POST")
             {
-                var token = authHeader.ToString().Replace("Bearer ", "");
-
-                // Token'ı doğrula
-                if (Guid.TryParse(token, out Guid guid))
+                foreach (var route in unprotectedPostRoutes)
                 {
-                    // Kullanıcıyı eşleştir
-                    var user = userService.GetFromCache(Guid.Parse(token));
-
-                    // Özelleştirilmiş bir kimlik oluşturun ve kullanıcının kimliğini depolayın
-
-                    var claimsIdentity = new ClaimsIdentity(new[] {new Claim("UserId", user.UserId.ToString()) });
-
-                    context.User = new ClaimsPrincipal(claimsIdentity); 
-
+                    if (context.Request.Path.Value.ToLower() == route)
+                    {
+                        await next(context);
+                    }
                 }
             }
 
-            await _next(context);
+            if (context.Request.Method == "GET")
+            {
+                Console.WriteLine(context.Request.Path.Value);
+                foreach (var route in unprotectedGetRoutes)
+                {
+                    if (context.Request.Path.StartsWithSegments(route))
+                    {
+                        await next(context);
+                    }
+                }
+            }
+           
+            if (context.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            {
+                var token = authHeader.ToString().Replace("Bearer ", "");
+                if (Guid.TryParse(token, out Guid result))
+                {
+                    var auth = userService.GetFromCache(Guid.Parse(token));
+                    if (auth == null)
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        context.Response.ContentType = MediaTypeNames.Application.Json;
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
+                        return;
+                    }
+                    context.Items["User"] = auth;
+                }
+                else
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    context.Response.ContentType = MediaTypeNames.Application.Json;
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
+                    return;
+                }
+
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                context.Response.ContentType = MediaTypeNames.Application.Json;
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
+                return;
+            }
+           
+            await next(context);
         }
     }
 
