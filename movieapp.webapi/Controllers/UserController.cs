@@ -20,7 +20,7 @@ namespace userapp.webapi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private IUserService userService;
+        private readonly IUserService userService;
 
         public UserController(IUserService userService)
         {
@@ -51,7 +51,7 @@ namespace userapp.webapi.Controllers
                 {
                     return NotFound(new { message = "There is no such a user like this" });
                 }
-                Console.WriteLine((User)user);
+                
                 return Ok(user);
             }
             else
@@ -80,48 +80,56 @@ namespace userapp.webapi.Controllers
 
         }
 
-        // PUT api/<UserController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] User user)
+        // PUT api/<UserController>
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] User user)
         {
             try
             {
-                User existingUser = await userService.GetById(id);
+                if (HttpContext.Items.TryGetValue("User", out var existingUser))
+                {
+                    if (existingUser == null)
+                    {
+                        return NotFound(new { message = "There is no such a user like this" });
+                    }
+                    if (user.Password != null)
+                    {
+                        if (user.Password.Length < 6)
+                        {
+                            throw new ValidationException("Password field cannot be less than 6 characters");
+                        }
+                        user.Password = BC.HashPassword(user.Password);
+                    }
 
-                if (existingUser == null)
+                    Type modelType = user.GetType();
+                    Type userType = existingUser.GetType();
+
+                    PropertyInfo[] modelProperties = modelType.GetProperties();
+                    PropertyInfo[] userProperties = userType.GetProperties();
+
+                    foreach (var property in modelProperties)
+                    {
+                        if (property.Name == "UserId")
+                        {
+                            continue;
+                        }
+                        var value = property.GetValue(user);
+                        if (value != null)
+                        {
+                            var correspondingProperty = userProperties.FirstOrDefault(p => p.Name == property.Name);
+                            if (correspondingProperty != null && correspondingProperty.CanWrite)
+                            {
+                                correspondingProperty.SetValue(existingUser, value);
+                            }
+                        }
+                    }
+                    await userService.Update((User)existingUser);
+                    return Ok(existingUser);
+                }
+                else
                 {
                     return NotFound(new { message = "There is no such a user like this" });
                 }
-
-                if (user.Password != null)
-                {
-                    user.Password = BC.HashPassword(user.Password);
-                }
-                
-                Type modelType = user.GetType();
-                Type userType = existingUser.GetType();
-
-                PropertyInfo[] modelProperties = modelType.GetProperties();
-                PropertyInfo[] userProperties = userType.GetProperties();
-
-                foreach (var property in modelProperties)
-                {
-                    if (property.Name == "UserId")
-                    {
-                        continue;
-                    }
-                    var value = property.GetValue(user);
-                    if (value != null)
-                    {
-                        var correspondingProperty = userProperties.FirstOrDefault(p => p.Name == property.Name);
-                        if (correspondingProperty != null && correspondingProperty.CanWrite)
-                        {
-                            correspondingProperty.SetValue(existingUser, value);
-                        }
-                    }
-                }
-                await userService.Update(existingUser);
-                return Ok(existingUser); 
             }
             catch (ValidationException e)
             {
@@ -154,15 +162,28 @@ namespace userapp.webapi.Controllers
             return BadRequest(new { message = "Invalid credentials." });
         }
 
-        [HttpPost("{userId}/watched/{movieId}")]
-        public async Task<IActionResult> Watch(int userId, int movieId)
+        [HttpPost("watched/{movieId}")]
+        public async Task<IActionResult> Watch(int movieId)
         {
             try
             {
-                await userService.AddUserWatched(userId, movieId);
-                var movies = await userService.GetWatched(userId);
-                var movie = movies.FirstOrDefault(m => m.MovieId == movieId);
-                return Ok(movie);
+                if (HttpContext.Items.TryGetValue("User", out var user))
+                {
+                    if (user == null)
+                    {
+                        return NotFound(new { message = "There is no such a user like this" });
+                    }
+                    User existingUser = (User)user;
+                    await userService.AddUserWatched(existingUser.UserId, movieId);
+                    var movies = await userService.GetWatched(existingUser.UserId);
+                    var movie = movies.FirstOrDefault(m => m.MovieId == movieId);
+                    return Ok(movie);
+                }
+                else
+                {
+                    return NotFound(new { message = "There is no such a user like this" });
+                }
+               
             }
             catch (ValidationException e)
             {
@@ -171,11 +192,24 @@ namespace userapp.webapi.Controllers
            
         }
 
-        [HttpGet("{id}/watched")]
-        public async Task<IActionResult> GetWatched(int id)
+        [HttpGet("watched")]
+        public async Task<IActionResult> GetWatched()
         {
-            var watchedMovies = await userService.GetWatched(id);
-            return Ok(watchedMovies);
+            if (HttpContext.Items.TryGetValue("User", out var user))
+            {
+                if (user == null)
+                {
+                    return NotFound(new { message = "There is no such a user like this" });
+                }
+                User existingUser = (User)user;
+                var watchedMovies = await userService.GetWatched(existingUser.UserId);
+                return Ok(watchedMovies);
+            }
+            else
+            {
+                return NotFound(new { message = "There is no such a user like this" });
+            }
+           
         }
     }
 }

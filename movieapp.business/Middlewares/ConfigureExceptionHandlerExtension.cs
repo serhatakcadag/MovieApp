@@ -26,8 +26,9 @@ namespace MovieApp.Business.Middlewares
 
                     if (contextFeature.Error.InnerException != null)
                     {
+                      
                         if (contextFeature.Error.InnerException.Data.Contains("Server Error Code"))
-                        {
+                        {   
                             var code = contextFeature.Error.InnerException.Data["Server Error Code"];
                             if ((int)code == 1062)
                             {
@@ -45,6 +46,11 @@ namespace MovieApp.Business.Middlewares
                                     defaultMessage = "Duplicated value error.";
                                 }
                             }
+                            else
+                            {
+                                defaultMessage = contextFeature.Error.InnerException.Message;
+                            }
+
                         }
                         else
                         {

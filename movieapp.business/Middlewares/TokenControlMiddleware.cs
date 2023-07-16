@@ -14,7 +14,7 @@ namespace MovieApp.Business.Middlewares
     // Middleware
     public class TokenControlMiddleware : IMiddleware
     {
-        private IUserService userService;
+        private readonly IUserService userService;
 
         public TokenControlMiddleware (IUserService userService)
         {

@@ -16,24 +16,31 @@ namespace movieapp.business.Concrete
     public class UserManager : IUserService
     {
        
-        private IUserRepository userRepository;
-        private IValidator<UserRegister> userValidator;
+        private readonly IUserRepository userRepository;
+        private readonly IMovieRepository movieRepository;
+        private readonly IValidator<UserRegister> userValidator;
         private readonly IMemoryCache cache;
 
-        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator, IMemoryCache cache)
+        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator, IMemoryCache cache, IMovieRepository movieRepository)
         {
             this.userValidator = userValidator;
             this.userRepository = userRepository;
+            this.movieRepository = movieRepository;
             this.cache = cache;
         }
 
         public async Task AddUserWatched(int userId, int movieId)
         {
             var movies = await userRepository.GetWatched(userId);
-            var movie = movies.FirstOrDefault(m => m.MovieId == movieId);
-            if (movie != null)
+            var watchedMovie = movies.FirstOrDefault(m => m.MovieId == movieId);
+            if (watchedMovie != null)
             {
                 throw new ValidationException("The movie is already watched.");
+            }
+            var movie = await movieRepository.GetById(movieId);
+            if (movie == null)
+            {
+                throw new ValidationException("There is no such a movie like this.");
             }
             await userRepository.AddUserWatched(userId, movieId);
         }

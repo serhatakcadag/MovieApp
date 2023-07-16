@@ -11,7 +11,7 @@ namespace movieapp.data.Concrete.EFCore
 {
     public class EfCoreUserRepository : EfCoreGenericRepository<User, MovieContext>, IUserRepository
     {
-        private MovieContext context;
+        private readonly MovieContext context;
         public EfCoreUserRepository(MovieContext context) : base(context)
         {
             this.context = context;

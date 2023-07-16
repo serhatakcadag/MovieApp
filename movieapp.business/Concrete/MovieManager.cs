@@ -13,9 +13,9 @@ namespace movieapp.business.Concrete
 {
     public class MovieManager : IMovieService
     {
-        private IMovieRepository movieRepository;
+        private readonly IMovieRepository movieRepository;
 
-        private IValidator<Movie> movieValidator;
+        private readonly IValidator<Movie> movieValidator;
 
         public MovieManager(IMovieRepository movieRepository, IValidator<Movie> movieValidator)
         {

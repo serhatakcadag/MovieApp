@@ -11,7 +11,7 @@ namespace movieapp.data.Concrete.EFCore
         where TContext : DbContext, new()
         where TEntity : class
     {
-        private TContext context;
+        private readonly TContext context;
 
         public EfCoreGenericRepository(TContext context)
         {
