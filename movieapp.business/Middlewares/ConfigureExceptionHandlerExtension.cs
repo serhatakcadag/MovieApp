@@ -46,6 +46,11 @@ namespace MovieApp.Business.Middlewares
                                     defaultMessage = "Duplicated value error.";
                                 }
                             }
+                            else if ((int)code == 1452)
+                            {
+                                defaultMessage = "There is no record with this given ID";
+                                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                            }
                             else
                             {
                                 defaultMessage = contextFeature.Error.InnerException.Message;

@@ -17,15 +17,13 @@ namespace movieapp.business.Concrete
     {
        
         private readonly IUserRepository userRepository;
-        private readonly IMovieRepository movieRepository;
         private readonly IValidator<UserRegister> userValidator;
         private readonly IMemoryCache cache;
 
-        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator, IMemoryCache cache, IMovieRepository movieRepository)
+        public UserManager(IUserRepository userRepository, IValidator<UserRegister> userValidator, IMemoryCache cache)
         {
             this.userValidator = userValidator;
             this.userRepository = userRepository;
-            this.movieRepository = movieRepository;
             this.cache = cache;
         }
 
@@ -36,11 +34,6 @@ namespace movieapp.business.Concrete
             if (watchedMovie != null)
             {
                 throw new ValidationException("The movie is already watched.");
-            }
-            var movie = await movieRepository.GetById(movieId);
-            if (movie == null)
-            {
-                throw new ValidationException("There is no such a movie like this.");
             }
             await userRepository.AddUserWatched(userId, movieId);
         }
