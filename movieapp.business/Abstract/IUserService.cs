@@ -18,5 +18,6 @@ namespace movieapp.business.Abstract
         Task<List<Movie>> GetWatched(int id);
         Task StoreInCache(Guid token, User user);
         User GetFromCache(Guid token);
+        void Logout(Guid guid);
     }
 }

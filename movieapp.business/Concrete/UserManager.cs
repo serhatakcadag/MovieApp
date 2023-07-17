@@ -108,5 +108,10 @@ namespace movieapp.business.Concrete
             var user = cache.Get<User>(token);
             return user;
         }
+
+        public void Logout(Guid guid)
+        {
+            cache.Remove(guid);
+        }
     }
 }

@@ -211,5 +211,17 @@ namespace userapp.webapi.Controllers
             }
            
         }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            {
+                var token = authHeader.ToString().Replace("Bearer ", "");
+                userService.Logout(Guid.Parse(token));
+                return Ok(new { message = "Logged out" });
+            }
+            return BadRequest(new { message = "Invalid credentials." });
+        }
     }
 }
