@@ -2,14 +2,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using movieapp.business.Abstract;
 using movieapp.business.Concrete;
 using movieapp.business.Validator;
@@ -17,10 +15,7 @@ using movieapp.data.Abstract;
 using movieapp.data.Concrete.EFCore;
 using movieapp.entity;
 using MovieApp.Business.Middlewares;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace movieapp.webapi
 {
@@ -53,7 +48,52 @@ namespace movieapp.webapi
 
             services.AddTransient<TokenControlMiddleware>();
             services.AddMemoryCache();
-         
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "MovieApp API", 
+                    Version = "v1",
+                    Description = "A basic movie app API with ASP.NET Core" 
+                });
+
+                var securityScheme = new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "Guid Authorization header using the Bearer scheme.",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                };
+
+                c.AddSecurityDefinition("Bearer", securityScheme);
+
+                var securityRequirement = new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                };
+
+                c.AddSecurityRequirement(securityRequirement); 
+
+
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,7 +103,13 @@ namespace movieapp.webapi
             {
                 app.UseDeveloperExceptionPage();
             }
-           
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "MovieApp");
+            });
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -73,15 +119,19 @@ namespace movieapp.webapi
             // app.UseTokenControlMiddleware();
             app.ConfigureExceptionHandler();
 
-            app.UseMiddleware<TokenControlMiddleware>();
+           // app.UseMiddleware<TokenControlMiddleware>();
 
 
-           /* app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/users"), appBuilder =>
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/users"), appBuilder =>
             {
                 appBuilder.UseMiddleware<TokenControlMiddleware>();
-            });*/
+            });
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/movies"), appBuilder =>
+            {
+                appBuilder.UseMiddleware<TokenControlMiddleware>();
+            });
 
-           
+
 
             app.UseEndpoints(endpoints =>
             {
