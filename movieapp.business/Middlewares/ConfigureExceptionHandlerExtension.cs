@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -26,18 +27,20 @@ namespace MovieApp.Business.Middlewares
 
                     if (contextFeature.Error.InnerException != null)
                     {
-                      
-                        if (contextFeature.Error.InnerException.Data.Contains("Server Error Code"))
-                        {   
-                            var code = contextFeature.Error.InnerException.Data["Server Error Code"];
-                            if ((int)code == 1062)
+                        Console.WriteLine(contextFeature.Error.InnerException.GetType());
+                        if(contextFeature.Error.InnerException is MySqlException mySqlException)
+                        {
+                            // özel exception paketine bak
+                            Console.WriteLine(mySqlException.Number);
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                           
+                            if (mySqlException.Number == 1062)
                             {
-                                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                                if (contextFeature.Error.InnerException.Message.ToLower().Contains("email"))
+                                if (mySqlException.Message.ToLower().Contains("email"))
                                 {
                                     defaultMessage = "This email is already in use.";
                                 }
-                                else if (contextFeature.Error.InnerException.Message.ToLower().Contains("username"))
+                                else if (mySqlException.Message.ToLower().Contains("username"))
                                 {
                                     defaultMessage = "This username is already in use.";
                                 }
@@ -46,22 +49,20 @@ namespace MovieApp.Business.Middlewares
                                     defaultMessage = "Duplicated value error.";
                                 }
                             }
-                            else if ((int)code == 1452)
+                            else if(mySqlException.Number == 1452)
                             {
-                                defaultMessage = "There is no record with this given ID";
-                                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                                Console.WriteLine(mySqlException.ErrorCode);
+                                defaultMessage = "There is no record with this given id.";
                             }
                             else
                             {
-                                defaultMessage = contextFeature.Error.InnerException.Message;
+                                defaultMessage = mySqlException.Message;
                             }
-
                         }
                         else
                         {
                             defaultMessage = contextFeature.Error.InnerException.Message;
                         }
-                       
                     }
 
                     if (contextFeature != null)
