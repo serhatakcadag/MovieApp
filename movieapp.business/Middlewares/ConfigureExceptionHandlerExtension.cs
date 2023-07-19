@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -51,12 +52,39 @@ namespace MovieApp.Business.Middlewares
                             }
                             else if(mySqlException.Number == 1452)
                             {
-                                Console.WriteLine(mySqlException.ErrorCode);
                                 defaultMessage = "There is no record with this given id.";
                             }
                             else
                             {
                                 defaultMessage = mySqlException.Message;
+                            }
+                        }
+                        else if (contextFeature.Error.InnerException is SqlException sqlException)
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                            if (sqlException.Number == 2601)
+                            {
+                                if (sqlException.Message.ToLower().Contains("email"))
+                                {
+                                    defaultMessage = "This email is already in use.";
+                                }
+                                else if (sqlException.Message.ToLower().Contains("username"))
+                                {
+                                    defaultMessage = "This username is already in use.";
+                                }
+                                else
+                                {
+                                    defaultMessage = "Duplicated value error.";
+                                }
+                            }
+                            else if (sqlException.Number == 547)
+                            {
+                                defaultMessage = "There is no record with this given id.";
+                            }
+                            else
+                            {
+                                defaultMessage = sqlException.Message;
                             }
                         }
                         else

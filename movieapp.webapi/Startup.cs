@@ -17,6 +17,7 @@ using movieapp.entity;
 using MovieApp.Business.Middlewares;
 
 
+
 namespace movieapp.webapi
 {
     public class Startup
@@ -33,7 +34,7 @@ namespace movieapp.webapi
         {
             services.AddDbContext<MovieContext>(options =>
             {
-                options.UseMySql(Configuration.GetConnectionString("MySqlConnectionString"));
+                options.UseSqlServer(Configuration.GetConnectionString("MsSqlConnectionString"));
             });
             services.AddScoped<IMovieRepository, EfCoreMovieRepository>();
             services.AddScoped<IMovieService, MovieManager>();
