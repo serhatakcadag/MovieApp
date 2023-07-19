@@ -26,14 +26,34 @@ namespace MovieApp.WebApi.Controllers
 
         // GET: api/<MovieController>
         [HttpGet]
-        public async Task<IActionResult> Get(string query)
+        public async Task<IActionResult> Get(string query, int page = 1, int limit = 2)
         {
             var movies = await movieService.GetAll();
             if (query != null)
             {
                 movies = movies.Where(m => m.Title.ToLower().Contains(query.ToLower())).ToList();
             }
-            return Ok(movies);
+
+
+            int total = movies.Count;
+            int skip = (page - 1) * limit;
+
+            var pagedItems = movies.Skip(skip).Take(limit).ToList();
+
+            int? next = null;
+            int? prev = null;
+            if (page * limit < total)
+            {
+                next = page + 1;
+            }
+            if (page * limit > limit)
+            {
+                prev = page - 1;
+            }
+
+            var pagination = new { next = next, prev = prev };
+
+            return Ok(new { pagination = pagination, movies = pagedItems });
         }
 
        

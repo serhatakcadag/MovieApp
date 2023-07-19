@@ -30,14 +30,35 @@ namespace userapp.webapi.Controllers
 
         // GET: api/<UserController>
         [HttpGet]
-        public async Task<IActionResult> Get(string query)
+        public async Task<IActionResult> Get(string query, int page = 1, int limit = 2)
         {
             var users = await userService.GetAll();
-            if (query!=null)
+
+            if (query != null)
             {
                 users = users.Where(u => u.Username.ToLower().Contains(query.ToLower())).ToList();
             }
-            return Ok(users);
+
+            int total = users.Count;
+            int skip = (page - 1) * limit;
+
+            var pagedItems = users.Skip(skip).Take(limit).ToList();
+                            
+            int? next = null;
+            int? prev = null;
+            if (page*limit < total)
+            {
+                next = page + 1;
+            }
+            if (page*limit > limit)
+            {
+                prev = page - 1; 
+            }
+
+            var pagination = new { next = next, prev = prev };
+
+           
+            return Ok(new {pagination = pagination, users = pagedItems });
         }
 
         // GET api/<UserController>/5
