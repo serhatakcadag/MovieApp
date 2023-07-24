@@ -15,8 +15,7 @@ using movieapp.data.Abstract;
 using movieapp.data.Concrete.EFCore;
 using movieapp.entity;
 using MovieApp.Business.Middlewares;
-
-
+using System;
 
 namespace movieapp.webapi
 {
@@ -32,10 +31,40 @@ namespace movieapp.webapi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<MovieContext>(options =>
+            var provider = Configuration["Provider"];
+
+            switch (provider)
             {
-                options.UseSqlServer(Configuration.GetConnectionString("MsSqlConnectionString"));
-            });
+                case "SqlServer":
+                    services.AddDbContext<MovieContext>(options =>
+                    {
+                        options.UseSqlServer(Configuration.GetConnectionString("MsSqlConnectionString"),
+                               x => x.MigrationsAssembly("MovieApp.SqlServerMigrations"));
+                    });
+                    break;
+                case "MySql":
+                    services.AddDbContext<MovieContext>(options =>
+                    {
+                        options.UseMySql(Configuration.GetConnectionString("MySqlConnectionString"),
+                            x => x.MigrationsAssembly("MovieApp.MySqlMigrations"));
+                    });
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid database type specified in appsettings.json.");
+            }
+
+
+            /*services.AddDbContext<MovieContext>(options =>
+             {
+                 options.UseSqlServer(Configuration.GetConnectionString("MsSqlConnectionString"),
+                        x => x.MigrationsAssembly("MovieApp.SqlServerMigrations"));
+             }); */
+           /* services.AddDbContext<MovieContext>(options =>
+            {
+                options.UseMySql(Configuration.GetConnectionString("MySqlConnectionString"), 
+                    x => x.MigrationsAssembly("MovieApp.MySqlMigrations"));
+            });*/
+
             services.AddScoped<IMovieRepository, EfCoreMovieRepository>();
             services.AddScoped<IMovieService, MovieManager>();
             services.AddScoped<IUserRepository, EfCoreUserRepository>();
@@ -102,6 +131,7 @@ namespace movieapp.webapi
         {
             if (env.IsDevelopment())
             {
+                app.ApplyMigrations();
                 app.UseDeveloperExceptionPage();
             }
 
