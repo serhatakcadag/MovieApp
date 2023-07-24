@@ -89,9 +89,7 @@ namespace userapp.webapi.Controllers
             try
             {  
                 await userService.Create(u);
-                var guid = Guid.NewGuid();
-                await userService.StoreInCache(guid, u.User);
-                return Ok(new {user = u.User, token = guid });
+                return Ok(u.User);
             }
             catch (ValidationException e)
             {
