@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApp.Data", "movieapp.d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApp.Business", "movieapp.business\MovieApp.Business.csproj", "{5E437069-4550-441D-8D9C-81020892F1F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieApp.SqlServerMigrations", "MovieApp.SqlServerMigrations\MovieApp.SqlServerMigrations.csproj", "{C6752065-CB4B-4E09-B9A9-54F543C88F57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApp.SqlServerMigrations", "MovieApp.SqlServerMigrations\MovieApp.SqlServerMigrations.csproj", "{C6752065-CB4B-4E09-B9A9-54F543C88F57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieApp.MySqlMigrations", "MovieApp.MySqlMigrations\MovieApp.MySqlMigrations.csproj", "{320250C8-CCA6-41FA-9116-E003E0FA5B13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApp.MySqlMigrations", "MovieApp.MySqlMigrations\MovieApp.MySqlMigrations.csproj", "{320250C8-CCA6-41FA-9116-E003E0FA5B13}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieApp.WebApi.Tests", "MovieApp.WebApi.Tests\MovieApp.WebApi.Tests.csproj", "{16856A22-3A98-4688-928D-6A8F837E8970}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{320250C8-CCA6-41FA-9116-E003E0FA5B13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{320250C8-CCA6-41FA-9116-E003E0FA5B13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{320250C8-CCA6-41FA-9116-E003E0FA5B13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16856A22-3A98-4688-928D-6A8F837E8970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16856A22-3A98-4688-928D-6A8F837E8970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16856A22-3A98-4688-928D-6A8F837E8970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16856A22-3A98-4688-928D-6A8F837E8970}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -53,18 +53,6 @@ namespace movieapp.webapi
                     throw new InvalidOperationException("Invalid database type specified in appsettings.json.");
             }
 
-
-            /*services.AddDbContext<MovieContext>(options =>
-             {
-                 options.UseSqlServer(Configuration.GetConnectionString("MsSqlConnectionString"),
-                        x => x.MigrationsAssembly("MovieApp.SqlServerMigrations"));
-             }); */
-           /* services.AddDbContext<MovieContext>(options =>
-            {
-                options.UseMySql(Configuration.GetConnectionString("MySqlConnectionString"), 
-                    x => x.MigrationsAssembly("MovieApp.MySqlMigrations"));
-            });*/
-
             services.AddScoped<IMovieRepository, EfCoreMovieRepository>();
             services.AddScoped<IMovieService, MovieManager>();
             services.AddScoped<IUserRepository, EfCoreUserRepository>();
@@ -131,9 +119,10 @@ namespace movieapp.webapi
         {
             if (env.IsDevelopment())
             {
-                app.ApplyMigrations();
-                app.UseDeveloperExceptionPage();
+               app.UseDeveloperExceptionPage();
             }
+
+            app.ApplyMigrations();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
