@@ -66,6 +66,7 @@ namespace movieapp.webapi
 
             services.AddTransient<TokenControlMiddleware>();
             services.AddMemoryCache();
+            services.AddHttpContextAccessor();
 
             services.AddSwaggerGen(c =>
             {

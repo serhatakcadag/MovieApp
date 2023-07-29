@@ -21,10 +21,11 @@ namespace userapp.webapi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
-
-        public UserController(IUserService userService)
+        private readonly IHttpContextAccessor httpContextAccessor;  
+        public UserController(IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             this.userService = userService;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
 
@@ -66,7 +67,7 @@ namespace userapp.webapi.Controllers
         public IActionResult Profile()
         {
 
-            if (HttpContext.Items.TryGetValue("User", out var user))
+            if (httpContextAccessor.HttpContext.Items.TryGetValue("User", out var user))
             {
                 if (user == null)
                 {
@@ -105,7 +106,7 @@ namespace userapp.webapi.Controllers
         {
             try
             {
-                if (HttpContext.Items.TryGetValue("User", out var existingUser))
+                if (httpContextAccessor.HttpContext.Items.TryGetValue("User", out var existingUser))
                 {
                     if (existingUser == null)
                     {
@@ -186,7 +187,7 @@ namespace userapp.webapi.Controllers
         {
             try
             {
-                if (HttpContext.Items.TryGetValue("User", out var user))
+                if (httpContextAccessor.HttpContext.Items.TryGetValue("User", out var user))
                 {
                     if (user == null)
                     {
@@ -214,7 +215,7 @@ namespace userapp.webapi.Controllers
         [HttpGet("watched")]
         public async Task<IActionResult> GetWatched()
         {
-            if (HttpContext.Items.TryGetValue("User", out var user))
+            if (httpContextAccessor.HttpContext.Items.TryGetValue("User", out var user))
             {
                 if (user == null)
                 {
@@ -234,7 +235,7 @@ namespace userapp.webapi.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            if (httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
             {
                 var token = authHeader.ToString().Replace("Bearer ", "");
                 userService.Logout(Guid.Parse(token));

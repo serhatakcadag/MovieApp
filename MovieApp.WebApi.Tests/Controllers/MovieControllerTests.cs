@@ -82,8 +82,7 @@ namespace MovieApp.WebApi.Tests.Controllers
             //Assert
             if (result is OkObjectResult okResult)
             {
-                var createdMovie = (Movie)okResult.Value;
-                createdMovie.Should().NotBeNull();
+                okResult.Value.Should().NotBeNull();
             }
             result.Should().NotBeNull();
             result.Should().BeOfType(typeof(OkObjectResult));
@@ -180,5 +179,6 @@ namespace MovieApp.WebApi.Tests.Controllers
             result.Should().NotBeNull();
             result.Should().BeOfType(typeof(NotFoundObjectResult));
         }
+
     }
 }
